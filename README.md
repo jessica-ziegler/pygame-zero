@@ -2,7 +2,7 @@
 
 This repo contains a prototype for a game with Pygame Zero. And this is how it looks.
 
-![Preview](preview.png)
+![Preview](preview.PNG)
 
 # Installation
 You want to try it out?
