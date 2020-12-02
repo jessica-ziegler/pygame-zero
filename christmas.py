@@ -1,183 +1,215 @@
-# Write your code here :-)
 import random
 
 WIDTH = 500
 HEIGHT = 500
 
-
-muster_zuckerstange = { "bild": "christmas-ball", "geschwindigkeitVon": 1, "geschwindigkeitBis": 2 }
-muster_schneeflocke = { "bild": "schneeflocke", "geschwindigkeitVon": 1, "geschwindigkeitBis": 5 }
-muster_truthahn = { "bild": "christmas-ball2", "geschwindigkeitVon": 4, "geschwindigkeitBis": 4 }
-muster_santa = { "bild": "zuckerstange", "geschwindigkeitVon": 4, "geschwindigkeitBis": 4 }
-muster_bonbon = { "bild": "bonbon", "geschwindigkeitVon": 4, "geschwindigkeitBis": 4 }
-muster_powerup = { "bild": "truthahn", "geschwindigkeitVon": 8, "geschwindigkeitBis": 8 }
-
-started = False
+# Enthält alle fallenden Schneeflocken
 himmel = []
-lives = []
 
-players = []
-projectiles = []
+# Enthält alle fallenden Powerups
 powerups = []
 
+# Enthält Bomben (Ostereier)
+bomben = []
 
-def create_santas():
-    for i in range(1,5+1):
-        santa = Actor("santa-claus")
-        santa.top = 5
-        santa.left = WIDTH - (5 + santa.width * i)
-        lives.append(santa)
-        santa.draw()
+# Aktueller Highscore
+highscore = 0
+leben = 5
+lebensanzeige = []
 
-def print_score():
-    global score
-    global started
+for i in range(1,leben+1):
+    santa = Actor("santa-claus")
+    santa.top = 5
+    santa.left = WIDTH - (5 + santa.width * i)
+    lebensanzeige.append(santa)
 
-    if started == False:
-        if (len(lives) == 0):
-            create_santas()
-            score = len(lives) * 500 - 1
-        started = True
+# Spieler
+spieler = Actor('alien')
+spieler.bottom = HEIGHT
+spieler.left = WIDTH / 2 - spieler.width / 2
 
-    if score >= 0:
-        if (score % 500 == 0) and len(lives) > 0:
-            lives.pop(len(lives)-1)
-        score -= 1
-    else:
+def highscore_anzeigen():
+    global highscore
+
+    screen.draw.text("Highscore: " + str(highscore),
+                        (5, 5),
+                         fontname="bangers",
+                         color="gold",
+                         fontsize=40)
+
+    if leben <= 0:
         screen.draw.text("Das Spiel ist vorbei.",
-                         (WIDTH / 2 -150, HEIGHT / 2 - 20),
-                         fontname="bangers",
-                         color="gold",
-                         fontsize=40)
+                 (WIDTH / 2 -150, HEIGHT / 2 - 20),
+                 fontname="bangers",
+                 color="gold",
+                 fontsize=40)
 
-    screen.draw.text("Highscore: " + str(score+1),
-                         (5, 5),
-                         fontname="bangers",
-                         color="gold",
-                         fontsize=40)
-
-
-
-def erschaffe_flugobjekt(muster):
-    flugobjekt = Actor(muster["bild"])
-    flugobjekt.left = random.randint(0, WIDTH)
-    flugobjekt.top = -42
-    flugobjekt.speed = random.randint(muster["geschwindigkeitVon"],muster["geschwindigkeitBis"])
-    flugobjekt.imUhrzeigersinn = (random.randint(0,1) == 1)
-    himmel.append(flugobjekt)
-    flugobjekt.draw()
-
-def erschaffe_zuckerstange():
-    erschaffe_flugobjekt(muster_zuckerstange)
-
-def erschaffe_schneeflocke():
-    erschaffe_flugobjekt(muster_schneeflocke)
+def erschaffe_osterei():
+    osterei = Actor("osterei")
+    osterei.left = random.randint(0, WIDTH)
+    osterei.top = -42
+    osterei.geschwindigkeit = random.randint(15,20)
+    osterei.imUhrzeigersinn = (random.randint(0,1) == 1)
+    himmel.append(osterei)
+    bomben.append(osterei)
+    osterei.draw()
 
 def erschaffe_truthahn():
-    erschaffe_flugobjekt(muster_truthahn)
+    truthahn = Actor("truthahn")
+    truthahn.left = random.randint(0, WIDTH)
+    truthahn.top = -42
+    truthahn.geschwindigkeit = random.randint(1,5)
+    truthahn.imUhrzeigersinn = (random.randint(0,1) == 1)
+    himmel.append(truthahn)
+    powerups.append(truthahn)
+    truthahn.draw()
 
-def erschaffe_santa():
-    erschaffe_flugobjekt(muster_santa)
+# Erzeuge eine Weihnachtskugel mit zufälliger Geschwindigkeit, Drehrichtung und Startposition
+def erschaffe_weihnachtskugel():
+    # wähle Farbe der kugel zufällig
+    kugelfarbe = ""
 
-def erschaffe_bonbon():
-    erschaffe_flugobjekt(muster_bonbon)
-
-def erschaffe_powerup():
-    muster = muster_powerup
-    flugobjekt = Actor(muster["bild"])
-    flugobjekt.left = players[0].left
-    flugobjekt.top = -42
-    flugobjekt.speed = random.randint(muster["geschwindigkeitVon"],muster["geschwindigkeitBis"])
-    flugobjekt.imUhrzeigersinn = (random.randint(0,1) == 1)
-    himmel.append(flugobjekt)
-    powerups.append(flugobjekt)
-    flugobjekt.draw()
-
-
-def male_gegenstand(flugobjekt):
-    flugobjekt.top = -40
-    flugobjekt.left = random.randint(0, WIDTH)
-    flugobjekt.draw()
-
-def plane_flugobjekte(anzahl, malfunktion):
-    for i in range(1, anzahl):
-        clock.schedule(malfunktion, random.randint(0,100))
-
-def draw():
-    global score
-    alien = Actor('alien')
-    alien.bottom = HEIGHT
-    alien.left = WIDTH / 2 - alien.width / 2
-    players.append(alien)
-
-    hat = Actor('santa-hat')
-    hat.bottom = alien.bottom - alien.height + 10
-    hat.left = alien.left + alien.width / 2 - 40
-    players.append(hat)
-
-    if len(himmel) == 0:
-        plane_flugobjekte(random.randint(300,500), erschaffe_schneeflocke)
-        plane_flugobjekte(random.randint(200,200), erschaffe_zuckerstange)
-        plane_flugobjekte(random.randint(300,300), erschaffe_truthahn)
-        plane_flugobjekte(random.randint(50,50), erschaffe_santa)
-        plane_flugobjekte(random.randint(200,200), erschaffe_bonbon)
-        plane_flugobjekte(random.randint(50,50), erschaffe_powerup)
-
-    print_score()
-    for life in lives:
-        life.draw()
-
-    for player in players:
-        player.draw()
-
-    if score > 0:
-        for up in powerups:
-            if up.colliderect(players[0]):
-                score += 500
-                powerups.remove(up)
-
-def fliege(flugobjekt):
-    # Drehung
-    if flugobjekt.imUhrzeigersinn:
-        flugobjekt.angle += 1
+    if (random.randint(0,1) == 1):
+        kugelfarbe = "weihnachtskugel-rot"
     else:
-        flugobjekt.angle -= 1
+        kugelfarbe = "weihnachtskugel-gruen"
+
+    # Erzeuge die Kugel
+    weihnachtskugel = Actor(kugelfarbe)
+    weihnachtskugel.left = random.randint(0, WIDTH)
+    weihnachtskugel.top = -42
+    weihnachtskugel.geschwindigkeit = random.randint(1,2)
+    weihnachtskugel.imUhrzeigersinn = (random.randint(0,1) == 1)
+    himmel.append(weihnachtskugel)
+    weihnachtskugel.draw()
+
+# Erzeuge eine Schneeflocke mit zufälliger Geschwindigkeit, Drehrichtung und Startposition
+def erschaffe_schneeflocke():
+    schneeflocke = Actor("schneeflocke")
+    schneeflocke.left = random.randint(0, WIDTH)
+    schneeflocke.top = -42
+    schneeflocke.geschwindigkeit = random.randint(1,5)
+    schneeflocke.imUhrzeigersinn = (random.randint(0,1) == 1)
+    himmel.append(schneeflocke)
+    schneeflocke.draw()
+
+# Erzeuge eine Zuckerstange mit zufälliger Geschwindigkeit, Drehrichtung und Startposition
+def erschaffe_zuckerstange():
+    zuckerstange = Actor("zuckerstange")
+    zuckerstange.left = random.randint(0, WIDTH)
+    zuckerstange.top = -42
+    zuckerstange.geschwindigkeit = random.randint(4,4)
+    zuckerstange.imUhrzeigersinn = (random.randint(0,1) == 1)
+    himmel.append(zuckerstange)
+    zuckerstange.draw()
+
+# Stoße die Erzeugung aller Schneeflocken an
+def erschaffe_schneeregen():
+    anzahl_flocken = random.randint(300,500)
+    anzahl_zuckerstangen = 200
+    anzahl_weihnachtskugeln = 200
+    anzahl_powerups = 50
+    anzahl_ostereier = 50
+
+    for i in range(1, anzahl_flocken):
+        clock.schedule(erschaffe_schneeflocke, random.randint(0,100))
+
+    for i in range(1, anzahl_zuckerstangen):
+        clock.schedule(erschaffe_zuckerstange, random.randint(0,100))
+
+    for i in range(1, anzahl_weihnachtskugeln):
+        clock.schedule(erschaffe_weihnachtskugel, random.randint(0,100))
+
+    for i in range(1, anzahl_powerups):
+        clock.schedule(erschaffe_truthahn, random.randint(0,100))
+
+    for i in range(1, anzahl_ostereier):
+        clock.schedule(erschaffe_osterei, random.randint(0,100))
+
+def falle(himmelsobjekt):
+    # Drehung
+    if himmelsobjekt.imUhrzeigersinn:
+        himmelsobjekt.angle += 1
+    else:
+        himmelsobjekt.angle -= 1
 
     # Bewegung
-    flugobjekt.top += flugobjekt.speed
-
-def update():
-    screen.fill((0,0,0))
-    for flugobjekt in himmel:
-        fliege(flugobjekt)
-        flugobjekt.draw()
-
-    for flugobjekt in himmel:
-        if flugobjekt.y > HEIGHT:
-            himmel.remove(flugobjekt)
-            del flugobjekt
-
-    for p in projectiles:
-        p.x += p.speed
-        p.angle -= 3
-        p.draw()
-
-def shoot(alien):
-    global score
-
-    if score <= 0:
-        return
-
-    p = Actor('gift')
-    p.x = alien.x + 42
-    p.y = alien.y - 30
-    p.speed = 8
-    if score >= 200:
-        score -= 200
-    else:
-        score = 0
-    projectiles.append(p)
+    himmelsobjekt.top += himmelsobjekt.geschwindigkeit
+    himmelsobjekt.draw()
 
 def on_key_down(key):
-    if keys.UP == key:
-        shoot(players[0])
+    if (keys.LEFT == key):
+        spieler.left -= 50
+        spieler.left %= WIDTH
+    elif (keys.RIGHT == key):
+        spieler.left += 15
+        spieler.left %= WIDTH
+
+def powerup_essen(power_up):
+    global powerups
+    global himmel
+    global highscore
+
+    sounds.crunch.play()
+    powerups.remove(power_up)
+    himmel.remove(power_up)
+    del power_up
+
+    highscore += 500
+
+
+def bombe_explodieren(bombe):
+    global bomben
+    global himmel
+    global leben
+
+    sounds.eiquetschen2.play()
+    leben -= 1
+    lebensanzeige.remove(lebensanzeige[len(lebensanzeige)-1])
+
+    himmel.remove(bombe)
+    bomben.remove(bombe)
+
+    del bombe
+
+
+def draw():
+    # Sobald am Himmel keine Schneeflocken mehr sind, erschaffe neuen Schneeregen
+    if len(himmel) == 0:
+        erschaffe_schneeregen()
+
+def update():
+    global leben
+    screen.clear()
+
+    # Bomben explodieren lassen
+    if leben > 0:
+        for bombe in bomben:
+            if spieler.colliderect(bombe):
+                bombe_explodieren(bombe)
+
+    # Powerups essen
+    if leben > 0:
+        for power_up in powerups:
+            if spieler.colliderect(power_up):
+                powerup_essen(power_up)
+
+
+    # Alle Objekte fallen lassen
+    for item in himmel:
+        falle(item)
+
+        if item.y > HEIGHT:
+            himmel.remove(item)
+            if item in powerups:
+                powerups.remove(item)
+
+            if item in bomben:
+                bomben.remove(item)
+            del item
+
+    highscore_anzeigen()
+    spieler.draw()
+
+    for santa in lebensanzeige:
+        santa.draw()
